@@ -11,11 +11,11 @@ before_install:
  - sudo apt-get update
  - sudo apt-get install -y ufraw-batch libhdf5-serial-dev libnetcdf-dev libatlas-base-dev gfortran
  - sudo apt-get install -y python-scipy python-matplotlib python-opencv
- - ln -s /usr/share/pyshared/cv.py /usr/lib/pyshared/python2.7/cv2.so $VIRTUAL_ENV/lib/python2.7/site-packages/
  - pip install -q nose coverage
  - pip install -q coveralls six
  - pip install -q numpy
  - pip install -q cython
+ - ln -s /usr/share/pyshared/cv.py /usr/lib/pyshared/python2.7/cv2.so $VIRTUAL_ENV/lib/python2.7/site-packages/
  - cp -r /usr/share/pyshared/scipy $VIRTUAL_ENV/lib/python2.7/site-packages/
  - cp -r /usr/share/pyshared/matplotlib $VIRTUAL_ENV/lib/python2.7/site-packages/
  - pip install git+https://github.com/scikit-image/scikit-image.git
