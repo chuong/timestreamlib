@@ -16,8 +16,8 @@ before_install:
  - pip install -q numpy
  - pip install -q cython
  - ln -s /usr/share/pyshared/cv.py /usr/lib/pyshared/python2.7/cv2.so $VIRTUAL_ENV/lib/python2.7/site-packages/
- - cp -r /usr/share/pyshared/scipy $VIRTUAL_ENV/lib/python2.7/site-packages/
- - cp -r /usr/share/pyshared/matplotlib $VIRTUAL_ENV/lib/python2.7/site-packages/
+ - cp -r /usr/share/pyshared/scipy /usr/lib/pyshared/python2.7/scipy /usr/lib/pyshared/scipy $VIRTUAL_ENV/lib/python2.7/site-packages/
+ - cp -r /usr/lib/pyshared/matplotlib /usr/share/pyshared/matplotlib  $VIRTUAL_ENV/lib/python2.7/site-packages/
  - pip install git+https://github.com/scikit-image/scikit-image.git
 
 install:
