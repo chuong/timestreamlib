@@ -197,7 +197,7 @@ class ColorCardDetector (PipeComponent):
         # for glasshouse experiment, color card is outside of timestream path
         if not os.path.exists(self.ccf):
             configFilePath = os.path.dirname(
-                context.ints.data["settings"]['configFile'])
+                context.ints.data["configFile"])
             self.ccf = os.path.join(configFilePath, self.colorcardFile)
 
     def __call__(self, context, *args):
