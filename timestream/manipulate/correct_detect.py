@@ -12,9 +12,6 @@ import cv2
 from scipy import optimize
 import matplotlib.pylab as plt
 
-
-"""REVIEW COMMENTARY:
-
 KDM says:
     - Please use a module-level logging object to replace all print statements.
       Most prints should be at the 'INFO' logging level, unless they're
@@ -382,47 +379,37 @@ def createMap(Centre, Width, Height, Angle):
     MapY2 = -MapX * np.sin(Angle) + MapY * np.cos(Angle) + Centre[1]
     return MapX2.astype(np.float32), MapY2.astype(np.float32)
 
-
-def getColorcardColors(ccdCapt, GridSize, Show=False):
+def getColorcardColors(ColorCardCaptured, GridSize, Show = False):
     GridCols, GridRows = GridSize
-    Captured_Colors = np.zeros([3, GridRows * GridCols])
-    STD_Colors = np.zeros([GridRows * GridCols])
-    SquareSize2 = int(ccdCapt.shape[0] / GridRows)
-    HalfSquareSize2 = int(SquareSize2 / 2)
-    sampsz = int(0.5 * HalfSquareSize2)
+    Captured_Colors = np.zeros([3,GridRows*GridCols])
+    STD_Colors = np.zeros([GridRows*GridCols])
+    SquareSize2 = int(ColorCardCaptured.shape[0]/GridRows)
+    HalfSquareSize2 = int(SquareSize2/2)
+    SampleSize = int(0.5*HalfSquareSize2)
     if Show:
         plt.figure()
-        plt.imshow(ccdCapt)
+        plt.imshow(ColorCardCaptured)
         plt.hold(True)
-    for i in range(GridRows * GridCols):
-        Row = i // GridCols
-        Col = i - Row * GridCols
-        rr = Row * SquareSize2 + HalfSquareSize2
-        cc = Col * SquareSize2 + HalfSquareSize2
-        Captured_R = ccdCapt[rr - sampsz:rr + sampsz, cc - sampsz:cc + sampsz, 0]
-        Captured_R = Captured_R.astype(np.float)
-        Captured_G = ccdCapt[rr - sampsz:rr + sampsz, cc - sampsz:cc + sampsz, 1]
-        Captured_G = Captured_G.astype(np.float)
-        Captured_B = ccdCapt[rr - sampsz:rr + sampsz, cc - sampsz:cc + sampsz, 2]
-        Captured_B = Captured_B.astype(np.float)
-        STD_Colors[i] = np.std(Captured_R) + \
-            np.std(Captured_G) + np.std(Captured_B)
-        # FIXME: Remove these commented lines or uncomment them. This is what
-        # git is for.
+    for i in range(GridRows*GridCols):
+        Row = i//GridCols
+        Col = i - Row*GridCols
+        rr = Row*SquareSize2 + HalfSquareSize2
+        cc = Col*SquareSize2 + HalfSquareSize2
+        Captured_R = ColorCardCaptured[rr-SampleSize:rr+SampleSize, cc-SampleSize:cc+SampleSize, 0].astype(np.float)
+        Captured_G = ColorCardCaptured[rr-SampleSize:rr+SampleSize, cc-SampleSize:cc+SampleSize, 1].astype(np.float)
+        Captured_B = ColorCardCaptured[rr-SampleSize:rr+SampleSize, cc-SampleSize:cc+SampleSize, 2].astype(np.float)
+        STD_Colors[i] = np.std(Captured_R) + np.std(Captured_G) + np.std(Captured_B)
 #        Captured_R = np.sum(Captured_R)/Captured_R.size
 #        Captured_G = np.sum(Captured_G)/Captured_G.size
 #        Captured_B = np.sum(Captured_B)/Captured_B.size
         Captured_R = np.median(Captured_R)
         Captured_G = np.median(Captured_G)
         Captured_B = np.median(Captured_B)
-        Captured_Colors[0, i] = Captured_R
-        Captured_Colors[1, i] = Captured_G
-        Captured_Colors[2, i] = Captured_B
+        Captured_Colors[0,i] = Captured_R
+        Captured_Colors[1,i] = Captured_G
+        Captured_Colors[2,i] = Captured_B
         if Show:
-            plt.plot(
-                [cc - sampsz, cc - sampsz, cc + sampsz, cc + sampsz, cc - sampsz],
-                [rr - sampsz, rr + sampsz, rr + sampsz, rr - sampsz, rr - sampsz],
-                'w')
+            plt.plot([cc-SampleSize, cc-SampleSize, cc+SampleSize, cc+SampleSize, cc-SampleSize], [rr-SampleSize, rr+SampleSize, rr+SampleSize, rr-SampleSize, rr-SampleSize], 'w')
     plt.show()
     return Captured_Colors, STD_Colors
 
@@ -476,27 +463,29 @@ def getColorMatchingErrorVectorised(Arg, Colors, Captured_Colors):
     ErrorList = np.sqrt(np.sum(Diff * Diff, axis=0)).tolist()
     return ErrorList
 
-
-def estimateColorParametersFromWhiteBackground(Image, Window, MaxIntensity=255):
-    tlCnr = Window[0:2]
-    brCnr = Window[2:]
-    Captured_R = Image[tlCnr[1]:brCnr[1], tlCnr[0]:brCnr[0], 0].astype(np.float)
-    Captured_G = Image[tlCnr[1]:brCnr[1], tlCnr[0]:brCnr[0], 1].astype(np.float)
-    Captured_B = Image[tlCnr[1]:brCnr[1], tlCnr[0]:brCnr[0], 2].astype(np.float)
+def estimateColorParametersFromWhiteBackground(Image, Window, MaxIntensity = 255):
+    TopLeftCorner = Window[0:2]
+    BottomRightCorner = Window[2:]
+    Captured_R = Image[TopLeftCorner[1]:BottomRightCorner[1], TopLeftCorner[0]:BottomRightCorner[0], 0].astype(np.float)
+    Captured_G = Image[TopLeftCorner[1]:BottomRightCorner[1], TopLeftCorner[0]:BottomRightCorner[0], 1].astype(np.float)
+    Captured_B = Image[TopLeftCorner[1]:BottomRightCorner[1], TopLeftCorner[0]:BottomRightCorner[0], 2].astype(np.float)
     Captured_R = np.median(Captured_R)
     Captured_G = np.median(Captured_G)
     Captured_B = np.median(Captured_B)
-    scale_R = MaxIntensity / Captured_R
-    scale_G = MaxIntensity / Captured_G
-    scale_B = MaxIntensity / Captured_B
-    colorMatrix = np.eye(3)
-    colorConstant = np.zeros([3, 1])
-    colorGamma = np.ones([3, 1])
-    colorMatrix[0, 0] = scale_R
-    colorMatrix[1, 1] = scale_G
-    colorMatrix[2, 2] = scale_B
-    return colorMatrix, colorConstant, colorGamma
 
+    scale_R = MaxIntensity/Captured_R
+    scale_G = MaxIntensity/Captured_G
+    scale_B = MaxIntensity/Captured_B
+
+    colorMatrix = np.eye(3)
+    colorConstant = np.zeros([3,1])
+    colorGamma = np.ones([3,1])
+
+    colorMatrix[0,0] = scale_R
+    colorMatrix[1,1] = scale_G
+    colorMatrix[2,2] = scale_B
+
+    return colorMatrix, colorConstant, colorGamma
 
 def estimateColorParameters(TrueColors, ActualColors):
     # estimate color-correction parameters
@@ -524,18 +513,21 @@ def correctColorVectorised(Image, ColorMatrix, ColorConstant, ColorGamma):
     CapturedRGB = np.concatenate((CapturedR, CapturedG, CapturedB), axis=0)
     TempRGB = np.dot(ColorMatrix, CapturedRGB) + ColorConstant
     CorrectedRGB = np.zeros_like(TempRGB)
-    CorrectedRGB[0, :] = 255.0*np.power(TempRGB[0,:]/255.0, ColorGamma[0])
-    CorrectedRGB[1, :] = 255.0*np.power(TempRGB[1,:]/255.0, ColorGamma[1])
-    CorrectedRGB[2, :] = 255.0*np.power(TempRGB[2,:]/255.0, ColorGamma[2])
-    CorrectedR = CorrectedRGB[0, :].reshape([Height, Width])
-    CorrectedG = CorrectedRGB[1, :].reshape([Height, Width])
-    CorrectedB = CorrectedRGB[2, :].reshape([Height, Width])
+    CorrectedRGB[0,:] = 255.0*np.power(TempRGB[0,:]/255.0, ColorGamma[0])
+    CorrectedRGB[1,:] = 255.0*np.power(TempRGB[1,:]/255.0, ColorGamma[1])
+    CorrectedRGB[2,:] = 255.0*np.power(TempRGB[2,:]/255.0, ColorGamma[2])
+
+    CorrectedR = CorrectedRGB[0,:].reshape([Height, Width])
+    CorrectedG = CorrectedRGB[1,:].reshape([Height, Width])
+    CorrectedB = CorrectedRGB[2,:].reshape([Height, Width])
+
     CorrectedR[np.where(CorrectedR < 0)] = 0
     CorrectedG[np.where(CorrectedG < 0)] = 0
     CorrectedB[np.where(CorrectedB < 0)] = 0
     CorrectedR[np.where(CorrectedR > 255)] = 255
     CorrectedG[np.where(CorrectedG > 255)] = 255
     CorrectedB[np.where(CorrectedB > 255)] = 255
+
     ImageCorrected = np.zeros_like(Image)
     ImageCorrected[:, :, 0] = CorrectedR
     ImageCorrected[:, :, 1] = CorrectedG
@@ -626,16 +618,9 @@ def matchTemplatePyramid(PyramidImages, PyramidTemplates, RotationAngle=None,
                                 SearchRange[1] // 2 ** i]
             else:
                 SearchRange2 = SearchRange
-            matchedLocImage, maxVal, maxLoc, corrMap = \
-                    matchTemplateLocation(PyramidImages[i],
-                                          PyramidTemplates[i],
-                                          maxLocEst,
-                                          SearchRange=SearchRange2)
-            if RotationAngle is None:
-                matchedLocImage180, maxVal180, maxLoc180, corrMap180 = \
-                        matchTemplateLocation(np.rot90(PyramidImages[i], 2).astype(np.uint8),
-                                              PyramidTemplates[i],
-                                              maxLocEst, SearchRange)
+            matchedLocImage, maxVal, maxLoc, corrMap = matchTemplateLocation(PyramidImages[i], PyramidTemplates[i], maxLocEst, SearchRange = SearchRange2)
+            if RotationAngle == None:
+                matchedLocImage180, maxVal180, maxLoc180, corrMap180 = matchTemplateLocation(np.rot90(PyramidImages[i],2).astype(np.uint8), PyramidTemplates[i], maxLocEst, SearchRange)
                 if maxVal < 0.3 and maxVal180 < 0.3:
                     # FIXME: use logging module not print
                     print('#### Warning: low matching score ####')
