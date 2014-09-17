@@ -30,6 +30,7 @@ class ImagePipeline (object):
         ImageColorCorrector.actName: ImageColorCorrector,
         TrayDetector.actName: TrayDetector,
         PotDetector.actName: PotDetector,
+        PotDetectorGlassHouse.actName: PotDetectorGlassHouse,
         PlantExtractor.actName: PlantExtractor,
         ResultingImageWriter.actName: ResultingImageWriter,
         FeatureExtractor.actName: FeatureExtractor,

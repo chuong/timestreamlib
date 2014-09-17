@@ -542,6 +542,42 @@ class PotDetector (PipeComponent):
         plt.title('Detected trays and pots')
         plt.show()
 
+class PotDetectorGlassHouse (PipeComponent):
+    actName = "potdetectglasshouse"
+    argNames = {"mess": [False, "Just set pot position fron config file"],
+                "potRectangle": [True, "Pot bounding box"],
+                }
+
+    runExpects = [TimeStreamImage]
+    runReturns = [TimeStreamImage]
+
+    def __init__(self, context, **kwargs):
+        super(PotDetectorGlassHouse, self).__init__(**kwargs)
+
+    def __call__(self, context, *args):
+        print(self.mess)
+        tsi = args[0]
+        self.image = tsi.pixels
+
+        tsi.ipm = tm_pot.ImagePotMatrix(tsi, pots=[])
+        potID = 1
+        r = tm_pot.ImagePotRectangle(self.potRectangle, tsi.pixels.shape)
+        p = tm_pot.ImagePotHandler(potID, r, tsi.ipm)
+        tsi.ipm.addPot(p)
+
+        self.PotLoc = [(self.potRectangle[0]+self.potRectangle[2])//2,
+                       (self.potRectangle[1]+self.potRectangle[3])//2]
+        context.outputwithimage["potLocs"] = self.PotLoc
+        return([tsi])
+
+    def show(self):
+        plt.figure()
+        plt.imshow(self.image.astype(np.uint8))
+        plt.hold(True)
+        plt.plot([self.PotLoc[0]], [self.PotLoc[1]], 'ro')
+        plt.title('Pot Location')
+        plt.show()
+
 
 class PlantExtractor (PipeComponent):
     actName = "plantextract"
@@ -729,9 +765,6 @@ class ResultingFeatureWriter_csv (PipeComponent):
 
             self.outputdir = os.path.join(context.outputroot, "csv")
 
-        if not os.path.exists(self.outputdir):
-            os.makedirs(self.outputdir)
-
         # Are there any feature csv files? We check all possible features.
         for fName in tm_ps.StatParamCalculator.statParamMethods():
             outputfile = os.path.join(self.outputdir, fName + ".csv")
@@ -746,6 +779,9 @@ class ResultingFeatureWriter_csv (PipeComponent):
         print(self.mess)
         ipm = args[0].ipm
         ts = time.mktime(context.origImg.datetime.timetuple()) * 1000
+
+        if not os.path.exists(self.outputdir):
+            os.makedirs(self.outputdir)
 
         for fName in ipm.potFeatures:
             outputfile = os.path.join(self.outputdir, fName + ".csv")

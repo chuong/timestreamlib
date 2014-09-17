@@ -203,7 +203,7 @@ class FeatureCalculator(object):
         F = 4 * self.normRange(self._imgRGB[:, :, 1], rangeVal=(0, 255) ) \
             - 3 * self.normRange(self._imgRGB[:, :, 2], rangeVal=(0, 255)) \
             - 1 * self.normRange(self._imgRGB[:, :, 0], rangeVal=(0, 255))
-        F = np.reshape(F, (F.shape[0], F.shape[0], 1))
+        F = np.reshape(F, (F.shape[0], F.shape[1], 1))
         return(F)
 
     def getFeatures(self, feats, norm=RELATIVE_NORM):
