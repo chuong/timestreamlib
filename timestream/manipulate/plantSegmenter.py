@@ -62,6 +62,46 @@ class StatParamCalculator(object):
             return (0.0)  # FIXME: is this the best default?
         return (ecce[0]["Eccentricity"])
 
+    def height(self, mask):
+        bbox = regionprops(mask.astype("int8"), ["bbox"])
+        if len(bbox) == 0:
+            return (0.0)  # FIXME: is this the best default?
+        min_row, min_col, max_row, max_col = bbox[0]["bbox"]
+        return (max_row - min_row)
+
+    def width(self, mask):
+        bbox = regionprops(mask.astype("int8"), ["bbox"])
+        if len(bbox) == 0:
+            return (0.0)  # FIXME: is this the best default?
+        min_row, min_col, max_row, max_col = bbox[0]["bbox"]
+        return (max_col - min_col)
+
+    def wilting(self, mask):
+        GreenPixels = np.zeros(mask.shape[0])
+        for i in range(mask.shape[0]):
+            GreenPixels[i] = np.sum(mask[i,:])
+
+        # get range of plant height
+        PlantTop = 0
+        for i in range(mask.shape[0]):
+            if GreenPixels[i] != 0:
+                PlantTop = i
+                break
+        PlantBottom = mask.shape[0]
+        for i in range(mask.shape[0]-1,-1,-1):
+            if GreenPixels[i] != 0:
+                PlantBottom = i
+                break
+        # get wilting height
+        GreenPixelsCumSum = np.cumsum(GreenPixels)
+        GreenPixelsCumSum = GreenPixelsCumSum/GreenPixelsCumSum[-1]
+        for i in range(PlantTop, PlantBottom):
+            if GreenPixelsCumSum[i] >= 0.5:
+                WiltedHeight = i
+                break
+        Wilting = float(WiltedHeight-PlantTop)/float(PlantBottom-PlantTop)
+        return (Wilting)
+
     @classmethod
     def statParamMethods(cls):
         ignore = ["statParamMethods"]
