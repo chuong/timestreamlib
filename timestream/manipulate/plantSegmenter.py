@@ -92,14 +92,27 @@ class StatParamCalculator(object):
             if GreenPixels[i] != 0:
                 PlantBottom = i
                 break
+
         # get wilting height
         GreenPixelsCumSum = np.cumsum(GreenPixels)
-        GreenPixelsCumSum = GreenPixelsCumSum/GreenPixelsCumSum[-1]
+        if GreenPixelsCumSum[-1] != 0:
+            GreenPixelsCumSum = GreenPixelsCumSum/GreenPixelsCumSum[-1]
+        WiltedHeight = PlantTop
         for i in range(PlantTop, PlantBottom):
             if GreenPixelsCumSum[i] >= 0.5:
                 WiltedHeight = i
                 break
         Wilting = float(WiltedHeight-PlantTop)/float(PlantBottom-PlantTop)
+#        print("Wilting = ", Wilting)
+#        plt.figure()
+#        plt.imshow(mask.astype("int8"), cmap="Greys")
+#        plt.hold(True)
+#        plt.plot([0, mask.shape[1]],[PlantTop, PlantTop])
+#        plt.plot([0, mask.shape[1]],[WiltedHeight, WiltedHeight])
+#        plt.plot([0, mask.shape[1]],[PlantBottom, PlantBottom])
+#        plt.figure()
+#        plt.plot(GreenPixelsCumSum)
+#        plt.show()
         return (Wilting)
 
     @classmethod
